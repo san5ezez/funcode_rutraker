@@ -22,8 +22,6 @@ class UserGameFlowTests(TestCase):
             {
                 "title": "Half Life",
                 "description": "Classic",
-                "size": 1024 * 1024,
-                "seeds": 77,
                 "trailer_url": "https://example.com/trailer",
                 "download_url": "https://example.com/download",
             },
@@ -55,3 +53,12 @@ class UserGameFlowTests(TestCase):
         response = self.client.get(reverse("index"))
         self.assertContains(response, "Приветствую, tester")
         self.assertContains(response, reverse("logout"))
+
+
+class AuthFlowTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="authuser", password="pass12345")
+
+    def test_login_redirects_to_index(self):
+        response = self.client.post(reverse("login"), {"username": "authuser", "password": "pass12345"})
+        self.assertRedirects(response, reverse("index"))

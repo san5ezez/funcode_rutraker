@@ -37,6 +37,18 @@ class UserGameForm(forms.ModelForm):
         }
 
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['size'].required = False
+        self.fields['seeds'].required = False
+
+    def clean_size(self):
+        return self.cleaned_data.get('size') or 0
+
+    def clean_seeds(self):
+        return self.cleaned_data.get('seeds') or 0
+
+
 # ---------------------------
 # Форма для запроса новой игры (GameRequest)
 # ---------------------------

@@ -230,7 +230,7 @@
         <div class="results">
             {% for game in games %}
             <div class="game-card">
-                <img src="{% if game.image %}{{ game.image }}{% else %}{% static 'main/images/default_game.png' %}{% endif %}" alt="Game Image">
+                <img src="{% if game.image %}{{ game.image }}{% else %}{% static 'Без названия.jpg' %}{% endif %}" alt="Game Image">
                 <div class="game-info">
                     <h3 class="game-title" title="{{ game.title }}">{{ game.title }}</h3>
                     <div class="meta">

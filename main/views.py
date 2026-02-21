@@ -141,3 +141,6 @@ def add_user_game(request):
 class CustomLoginView(LoginView):
     template_name = 'main/login.html'
     authentication_form = AuthenticationForm
+
+    def get_success_url(self):
+        return self.get_redirect_url() or '/'
