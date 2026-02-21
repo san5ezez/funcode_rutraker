@@ -43,7 +43,9 @@ def index(request):
             "size": user_game.size,
             "image": user_game.image.url if user_game.image else "",
             "rutracker_id": None,
-            "link": None,
+            "link": user_game.download_url,
+            "trailer_url": user_game.trailer_url,
+            "screenshot": user_game.screenshot.url if user_game.screenshot else "",
         })
 
     if query and request.user.is_authenticated:
@@ -62,6 +64,8 @@ def index(request):
                     "size": int(torrent_data["size"]),
                     "image": f"/static/{random.choice(image_choices)}" if image_choices else "",
                     "link": torrent_data["desc_link"],
+                    "trailer_url": "",
+                    "screenshot": "",
                 })
         except Exception as e:
             print(f"Ошибка при поиске на RuTracker: {e}")

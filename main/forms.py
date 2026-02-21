@@ -31,7 +31,7 @@ class UserRegistrationForm(forms.ModelForm):
 class UserGameForm(forms.ModelForm):
     class Meta:
         model = UserGame
-        fields = ['title', 'description', 'size', 'seeds', 'image']
+        fields = ['title', 'description', 'size', 'seeds', 'image', 'screenshot', 'trailer_url', 'download_url']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }

@@ -8,6 +8,9 @@ class UserGame(models.Model):
     size = models.PositiveIntegerField(default=0, help_text="Размер в байтах")
     seeds = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='user_games/', blank=True, null=True)
+    screenshot = models.ImageField(upload_to='user_games/screenshots/', blank=True, null=True)
+    trailer_url = models.URLField(blank=True)
+    download_url = models.URLField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def size_readable(self):

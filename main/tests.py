@@ -24,12 +24,16 @@ class UserGameFlowTests(TestCase):
                 "description": "Classic",
                 "size": 1024 * 1024,
                 "seeds": 77,
+                "trailer_url": "https://example.com/trailer",
+                "download_url": "https://example.com/download",
             },
         )
 
         self.assertRedirects(response, reverse("index"))
         game = UserGame.objects.get(title="Half Life")
         self.assertEqual(game.user, self.user)
+        self.assertEqual(game.trailer_url, "https://example.com/trailer")
+        self.assertEqual(game.download_url, "https://example.com/download")
 
     def test_index_shows_user_game(self):
         UserGame.objects.create(
@@ -44,3 +48,10 @@ class UserGameFlowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Portal")
+
+
+    def test_authenticated_index_shows_greeting_and_logout(self):
+        self.client.login(username="tester", password="pass12345")
+        response = self.client.get(reverse("index"))
+        self.assertContains(response, "Приветствую, tester")
+        self.assertContains(response, reverse("logout"))
