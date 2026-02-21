@@ -1,0 +1,240 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Steam Clone Test</title>
+    <style>
+        body {
+            background: #1b2838;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #171a21;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        header img {
+            width: 120px;
+            height: auto;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            background-color: #66c0f4;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        header a:hover {
+            background-color: #4da8d8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: #66c0f4;
+            color: #000;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4da8d8;
+        }
+
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #16202d;
+            color: white;
+            font-size: 14px;
+        }
+
+        .register-button {
+            display: inline-block;
+            margin: 10px auto 30px auto;
+            padding: 10px 20px;
+            background-color: #66c0f4;
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .register-button:hover {
+            background-color: #4da8d8;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+        }
+
+        .game-card {
+            background: #16202d;
+            border: 1px solid #2a475e;
+            padding: 10px;
+            border-radius: 6px;
+            transition: transform 0.2s;
+        }
+
+        .game-card:hover {
+            transform: scale(1.03);
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .game-info {
+            margin-top: 10px;
+        }
+
+        .game-title {
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 5px 0;
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .seeds {
+            color: #a3cf06;
+        }
+
+        .footer-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .size {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .download-btn {
+            background: #66c0f4;
+            color: #000;
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .download-btn:hover {
+            background: #4da8d8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'register' %}">Зарегистрироваться</a>
+        <img src="{% static 'main/images/logo.png' %}" alt="Steam Logo">
+    </header>
+    <div class="container">
+        <h1>Поиск игр</h1>
+        <form method="GET">
+            <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Название игры">
+            <button type="submit">Искать</button>
+            <select name="sort" onchange="this.form.submit()">
+                <option value="" {% if not sort_by %}selected{% endif %}>Без сортировки</option>
+                <option value="size_asc" {% if sort_by == "size_asc" %}selected{% endif %}>Вес: по возрастанию</option>
+                <option value="size_desc" {% if sort_by == "size_desc" %}selected{% endif %}>Вес: по убыванию</option>
+                <option value="name_asc" {% if sort_by == "name_asc" %}selected{% endif %}>Название: А-Я</option>
+                <option value="name_desc" {% if sort_by == "name_desc" %}selected{% endif %}>Название: Я-А</option>
+                <option value="seeds_asc" {% if sort_by == "seeds_asc" %}selected{% endif %}>Сиды: по возрастанию</option>
+                <option value="seeds_desc" {% if sort_by == "seeds_desc" %}selected{% endif %}>Сиды: по убыванию</option>
+            </select>
+        </form>
+
+        <!-- Кнопка добавления игры для авторизованных -->
+        {% if user.is_authenticated %}
+        <div style="text-align:center;">
+            <a href="{% url 'add_user_game' %}" class="register-button">Добавить свою игру</a>
+        </div>
+        {% endif %}
+
+        <div class="results">
+            {% for game in games %}
+            <div class="game-card">
+                <img src="{% if game.image %}{{ game.image }}{% else %}{% static 'main/images/default_game.png' %}{% endif %}" alt="Game Image">
+                <div class="game-info">
+                    <h3 class="game-title" title="{{ game.title }}">{{ game.title }}</h3>
+                    <div class="meta">
+                        <span class="category">{{ game.category|default:"-"|truncatechars:15 }}</span>
+                        <span class="seeds">● {{ game.seeds|default:"?" }}</span>
+                    </div>
+                    <div class="footer-card">
+                        <span class="size">{{ game.size_readable|default:"?" }}</span>
+                        {% if game.rutracker_id %}
+                        <a href="https://rutracker.net/forum/viewtopic.php?t={{ game.rutracker_id }}" 
+                           target="_blank" class="download-btn">УСТАНОВИТЬ</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="text-align:center; color:#ccc;">Игры не найдены.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
