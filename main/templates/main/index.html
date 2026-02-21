@@ -205,6 +205,10 @@
             </select>
         </form>
 
+        {% if message %}
+        <p style="text-align:center; color:#ffcc66;">{{ message }}</p>
+        {% endif %}
+
         <!-- Кнопка добавления игры для авторизованных -->
         {% if user.is_authenticated %}
         <div style="text-align:center;">
