@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Статусы заявок{% endblock %}
+
+{% block content %}
+<style>
+    .status-page h1 {
+        margin-top: 0;
+        margin-bottom: 16px;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .filter-btn {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        background: #2a475e;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .filter-btn.active {
+        background: #66c0f4;
+        color: #000;
+    }
+
+    .requests-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .request-item {
+        background: #16202d;
+        border: 1px solid #2a475e;
+        border-radius: 8px;
+        padding: 14px;
+    }
+
+    .request-meta {
+        color: #9fb0bf;
+        font-size: 14px;
+        margin: 6px 0;
+    }
+
+    .status-pill {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: bold;
+        background: #5c6f7f;
+    }
+
+    .status-pill.pending { background: #f0ad4e; color: #111; }
+    .status-pill.approved { background: #86c232; color: #111; }
+    .status-pill.rejected { background: #d9534f; color: #fff; }
+</style>
+
+<div class="status-page">
+    <h1>Статусы заявок на игры</h1>
+
+    <div class="filter-bar">
+        <a class="filter-btn {% if status_filter == 'all' %}active{% endif %}" href="{% url 'game_requests_status' %}?status=all">Все ({{ counts.all }})</a>
+        <a class="filter-btn {% if status_filter == 'pending' %}active{% endif %}" href="{% url 'game_requests_status' %}?status=pending">На рассмотрении ({{ counts.pending }})</a>
+        <a class="filter-btn {% if status_filter == 'approved' %}active{% endif %}" href="{% url 'game_requests_status' %}?status=approved">Одобренные ({{ counts.approved }})</a>
+        <a class="filter-btn {% if status_filter == 'rejected' %}active{% endif %}" href="{% url 'game_requests_status' %}?status=rejected">Не одобренные ({{ counts.rejected }})</a>
+    </div>
+
+    <div class="requests-list">
+        {% for item in requests %}
+        <div class="request-item">
+            <h3>{{ item.name }}</h3>
+            <div class="request-meta">Пользователь: {{ item.user.username }} | {{ item.created_at|date:"d.m.Y H:i" }}</div>
+            <div>
+                <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+            </div>
+            <p>{{ item.description|truncatechars:220 }}</p>
+        </div>
+        {% empty %}
+        <p>Нет заявок с выбранным фильтром.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
