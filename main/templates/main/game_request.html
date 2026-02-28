@@ -1,10 +1,73 @@
 {% extends 'base.html' %}
 
+{% block title %}Запрос на добавление игры{% endblock %}
+
 {% block content %}
-<h2>Запрос на добавление игры</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Отправить запрос</button>
-</form>
+<style>
+    .request-card {
+        background: #16202d;
+        border: 1px solid #2a475e;
+        border-radius: 10px;
+        padding: 24px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .request-card h2 {
+        margin-top: 0;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .request-card p {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+    }
+
+    .request-card label {
+        margin-bottom: 6px;
+        color: #c7d5e0;
+    }
+
+    .request-card input,
+    .request-card textarea {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #35556f;
+        background: #0f1822;
+        color: #fff;
+        font-size: 14px;
+    }
+
+    .request-card textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .submit-btn {
+        margin-top: 10px;
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        background: #66c0f4;
+        color: #000;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .submit-btn:hover {
+        background: #4da8d8;
+    }
+</style>
+
+<div class="request-card">
+    <h2>Запрос на добавление игры</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="submit-btn">Отправить запрос</button>
+    </form>
+</div>
 {% endblock %}

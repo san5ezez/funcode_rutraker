@@ -5,7 +5,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import GameRequestForm, UserGameForm, UserRegistrationForm
 from .models import UserGame
@@ -46,6 +46,7 @@ def index(request):
             "link": user_game.download_url,
             "trailer_url": user_game.trailer_url,
             "screenshot": user_game.screenshot.url if user_game.screenshot else "",
+            "user_game_id": user_game.id,
         })
 
     if query and request.user.is_authenticated:
@@ -136,6 +137,11 @@ def add_user_game(request):
     else:
         form = UserGameForm()
     return render(request, 'main/add_user_game.html', {'form': form})
+
+
+def user_game_detail(request, game_id):
+    game = get_object_or_404(UserGame.objects.select_related("user"), id=game_id)
+    return render(request, "main/user_game_detail.html", {"game": game})
 
 
 class CustomLoginView(LoginView):
