@@ -22,6 +22,16 @@ class UserGame(models.Model):
         return self.title
 
 class GameRequest(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "На рассмотрении"),
+        (STATUS_APPROVED, "Одобрено"),
+        (STATUS_REJECTED, "Не одобрено"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -29,6 +39,7 @@ class GameRequest(models.Model):
     reviews = models.TextField()
     trailer_url = models.URLField()
     image = models.ImageField(upload_to='game_requests/')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
