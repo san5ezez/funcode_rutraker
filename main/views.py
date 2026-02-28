@@ -152,11 +152,6 @@ def user_game_detail(request, game_id):
     return render(request, "main/user_game_detail.html", {"game": game})
 
 
-def user_game_detail(request, game_id):
-    game = get_object_or_404(UserGame.objects.select_related("user"), id=game_id)
-    return render(request, "main/user_game_detail.html", {"game": game})
-
-
 class CustomLoginView(LoginView):
     template_name = 'main/login.html'
     authentication_form = AuthenticationForm
