@@ -239,11 +239,16 @@
                     </div>
                     <div class="footer-card">
                         <span class="size">{{ game.size_readable|default:"?" }}</span>
-                        {% if game.rutracker_id %}
-                        <a href="https://rutracker.net/forum/viewtopic.php?t={{ game.rutracker_id }}" target="_blank" class="download-btn">УСТАНОВИТЬ</a>
-                        {% elif game.link %}
-                        <a href="{{ game.link }}" target="_blank" class="download-btn">СКАЧАТЬ</a>
-                        {% endif %}
+                        <div style="display:flex; gap:6px;">
+                            {% if game.user_game_id %}
+                            <a href="{% url 'user_game_detail' game.user_game_id %}" class="download-btn">ПОДРОБНЕЕ</a>
+                            {% endif %}
+                            {% if game.rutracker_id %}
+                            <a href="https://rutracker.net/forum/viewtopic.php?t={{ game.rutracker_id }}" target="_blank" class="download-btn">УСТАНОВИТЬ</a>
+                            {% elif game.link %}
+                            <a href="{{ game.link }}" target="_blank" class="download-btn">СКАЧАТЬ</a>
+                            {% endif %}
+                        </div>
                     </div>
                     {% if game.trailer_url %}
                     <div style="margin-top:8px;">

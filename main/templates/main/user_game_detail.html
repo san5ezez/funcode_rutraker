@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ game.title }}{% endblock %}
+
+{% block content %}
+<style>
+    .detail-card {
+        background: #16202d;
+        border: 1px solid #2a475e;
+        border-radius: 10px;
+        padding: 24px;
+    }
+
+    .detail-cover {
+        width: 100%;
+        max-height: 340px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .detail-grid {
+        display: grid;
+        gap: 8px;
+    }
+
+    .meta-label {
+        color: #8f98a0;
+    }
+
+    .detail-links {
+        margin-top: 18px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .detail-btn {
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        background: #66c0f4;
+        color: #000;
+        font-weight: bold;
+    }
+
+    .detail-btn:hover {
+        background: #4da8d8;
+    }
+
+    .screenshot {
+        margin-top: 18px;
+        width: 100%;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="detail-card">
+    <img src="{% if game.image %}{{ game.image.url }}{% else %}{% static 'Без названия.jpg' %}{% endif %}" alt="{{ game.title }}" class="detail-cover">
+    <h1>{{ game.title }}</h1>
+
+    <div class="detail-grid">
+        <div><span class="meta-label">Добавил пользователь:</span> {{ game.user.username }}</div>
+        <div><span class="meta-label">Размер:</span> {{ game.size_readable }}</div>
+        <div><span class="meta-label">Сиды:</span> {{ game.seeds }}</div>
+        <div><span class="meta-label">Описание:</span><br>{{ game.description|linebreaksbr|default:"Описание не добавлено." }}</div>
+    </div>
+
+    <div class="detail-links">
+        {% if game.download_url %}
+        <a href="{{ game.download_url }}" target="_blank" class="detail-btn">Скачать</a>
+        {% endif %}
+        {% if game.trailer_url %}
+        <a href="{{ game.trailer_url }}" target="_blank" class="detail-btn">Смотреть трейлер</a>
+        {% endif %}
+        <a href="{% url 'index' %}" class="detail-btn">Назад к списку</a>
+    </div>
+
+    {% if game.screenshot %}
+    <img src="{{ game.screenshot.url }}" alt="Скриншот {{ game.title }}" class="screenshot">
+    {% endif %}
+</div>
+{% endblock %}
