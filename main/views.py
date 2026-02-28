@@ -5,10 +5,10 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import GameRequestForm, UserGameForm, UserRegistrationForm
-from .models import UserGame
+from .forms import GameRequestForm, UserRegistrationForm
+from .models import GameRequest, UserGame
 from main.management.commands.rutracker import RuTracker
 
 # Папка с картинками
@@ -29,7 +29,6 @@ def index(request):
 
     games = []
 
-    # Игры, добавленные пользователями (показываем всегда).
     user_games_qs = UserGame.objects.select_related("user")
     if query:
         user_games_qs = user_games_qs.filter(title__icontains=query)
@@ -46,10 +45,10 @@ def index(request):
             "link": user_game.download_url,
             "trailer_url": user_game.trailer_url,
             "screenshot": user_game.screenshot.url if user_game.screenshot else "",
+            "user_game_id": user_game.id,
         })
 
     if query and request.user.is_authenticated:
-        # Поиск через RuTracker для авторизованных пользователей.
         try:
             engine = RuTracker()
             engine.search(query)
@@ -70,7 +69,6 @@ def index(request):
         except Exception as e:
             print(f"Ошибка при поиске на RuTracker: {e}")
 
-    # Сортировка
     if sort_by == "size_asc":
         games.sort(key=lambda x: x["size"])
     elif sort_by == "size_desc":
@@ -118,24 +116,40 @@ def game_request(request):
             game_request_obj = form.save(commit=False)
             game_request_obj.user = request.user
             game_request_obj.save()
-            return redirect('index')
+            return redirect('game_requests_status')
     else:
         form = GameRequestForm()
     return render(request, 'main/game_request.html', {'form': form})
 
 
 @login_required
-def add_user_game(request):
-    if request.method == 'POST':
-        form = UserGameForm(request.POST, request.FILES)
-        if form.is_valid():
-            user_game = form.save(commit=False)
-            user_game.user = request.user
-            user_game.save()
-            return redirect('index')
+def game_requests_status(request):
+    status_filter = request.GET.get("status", "all")
+    valid_statuses = {"pending", "approved", "rejected"}
+
+    requests_qs = GameRequest.objects.select_related("user").order_by("-created_at")
+    if status_filter in valid_statuses:
+        requests_qs = requests_qs.filter(status=status_filter)
     else:
-        form = UserGameForm()
-    return render(request, 'main/add_user_game.html', {'form': form})
+        status_filter = "all"
+
+    counts = {
+        "all": GameRequest.objects.count(),
+        "pending": GameRequest.objects.filter(status="pending").count(),
+        "approved": GameRequest.objects.filter(status="approved").count(),
+        "rejected": GameRequest.objects.filter(status="rejected").count(),
+    }
+
+    return render(request, "main/game_requests_status.html", {
+        "requests": requests_qs,
+        "status_filter": status_filter,
+        "counts": counts,
+    })
+
+
+def user_game_detail(request, game_id):
+    game = get_object_or_404(UserGame.objects.select_related("user"), id=game_id)
+    return render(request, "main/user_game_detail.html", {"game": game})
 
 
 class CustomLoginView(LoginView):
