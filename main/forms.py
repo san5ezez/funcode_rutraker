@@ -31,10 +31,22 @@ class UserRegistrationForm(forms.ModelForm):
 class UserGameForm(forms.ModelForm):
     class Meta:
         model = UserGame
-        fields = ['title', 'description', 'size', 'seeds', 'image']
+        fields = ['title', 'description', 'size', 'seeds', 'image', 'screenshot', 'trailer_url', 'download_url']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['size'].required = False
+        self.fields['seeds'].required = False
+
+    def clean_size(self):
+        return self.cleaned_data.get('size') or 0
+
+    def clean_seeds(self):
+        return self.cleaned_data.get('seeds') or 0
 
 
 # ---------------------------

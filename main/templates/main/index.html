@@ -186,7 +186,18 @@
 </head>
 <body>
     <header>
-        <a href="{% url 'register' %}">Зарегистрироваться</a>
+        <div>
+            {% if user.is_authenticated %}
+                <span style="margin-right:10px;">Приветствую, {{ user.username }}!</span>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="padding:8px 12px; border:none; border-radius:4px; background:#66c0f4; font-weight:bold; cursor:pointer;">Выйти</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Войти</a>
+                <a href="{% url 'register' %}" style="margin-left:8px;">Зарегистрироваться</a>
+            {% endif %}
+        </div>
         <img src="{% static 'main/images/logo.png' %}" alt="Steam Logo">
     </header>
     <div class="container">
@@ -205,6 +216,10 @@
             </select>
         </form>
 
+        {% if message %}
+        <p style="text-align:center; color:#ffcc66;">{{ message }}</p>
+        {% endif %}
+
         <!-- Кнопка добавления игры для авторизованных -->
         {% if user.is_authenticated %}
         <div style="text-align:center;">
@@ -215,7 +230,7 @@
         <div class="results">
             {% for game in games %}
             <div class="game-card">
-                <img src="{% if game.image %}{{ game.image }}{% else %}{% static 'main/images/default_game.png' %}{% endif %}" alt="Game Image">
+                <img src="{% if game.image %}{{ game.image }}{% else %}{% static 'Без названия.jpg' %}{% endif %}" alt="Game Image">
                 <div class="game-info">
                     <h3 class="game-title" title="{{ game.title }}">{{ game.title }}</h3>
                     <div class="meta">
@@ -224,11 +239,27 @@
                     </div>
                     <div class="footer-card">
                         <span class="size">{{ game.size_readable|default:"?" }}</span>
-                        {% if game.rutracker_id %}
-                        <a href="https://rutracker.net/forum/viewtopic.php?t={{ game.rutracker_id }}" 
-                           target="_blank" class="download-btn">УСТАНОВИТЬ</a>
-                        {% endif %}
+                        <div style="display:flex; gap:6px;">
+                            {% if game.user_game_id %}
+                            <a href="{% url 'user_game_detail' game.user_game_id %}" class="download-btn">ПОДРОБНЕЕ</a>
+                            {% endif %}
+                            {% if game.rutracker_id %}
+                            <a href="https://rutracker.net/forum/viewtopic.php?t={{ game.rutracker_id }}" target="_blank" class="download-btn">УСТАНОВИТЬ</a>
+                            {% elif game.link %}
+                            <a href="{{ game.link }}" target="_blank" class="download-btn">СКАЧАТЬ</a>
+                            {% endif %}
+                        </div>
                     </div>
+                    {% if game.trailer_url %}
+                    <div style="margin-top:8px;">
+                        <a href="{{ game.trailer_url }}" target="_blank" class="download-btn">Трейлер</a>
+                    </div>
+                    {% endif %}
+                    {% if game.screenshot %}
+                    <div style="margin-top:8px;">
+                        <img src="{{ game.screenshot }}" alt="Скриншот игры">
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% empty %}

@@ -1,16 +1,15 @@
 import os
 import random
-from itertools import cycle
 
-from django.shortcuts import render, redirect
 from django.contrib.auth import login
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import UserGameForm, UserRegistrationForm, GameRequestForm
+from .forms import GameRequestForm, UserGameForm, UserRegistrationForm
 from .models import UserGame
-from main.management.commands.rutracker import RuTracker  # Если используешь RuTracker
+from main.management.commands.rutracker import RuTracker
 
 # Папка с картинками
 IMAGE_FOLDER = os.path.join(os.path.dirname(__file__), '1')
@@ -25,25 +24,37 @@ def format_size(size):
 
 
 def index(request):
-    query = request.GET.get("q", "").lower()
+    query = request.GET.get("q", "").strip().lower()
     sort_by = request.GET.get("sort", "")
 
     games = []
 
+    # Игры, добавленные пользователями (показываем всегда).
+    user_games_qs = UserGame.objects.select_related("user")
     if query:
-        # Проверка: только для авторизованных
-        if not request.user.is_authenticated:
-            return render(request, "main/index.html", {
-                "games": [],
-                "query": query,
-                "sort_by": sort_by,
-                "message": "Для поиска игр нужно войти в аккаунт."
-            })
+        user_games_qs = user_games_qs.filter(title__icontains=query)
 
-        # Поиск через RuTracker (или свои игры)
+    for user_game in user_games_qs:
+        games.append({
+            "title": user_game.title,
+            "category": f"Пользователь: {user_game.user.username}",
+            "seeds": user_game.seeds,
+            "size_readable": user_game.size_readable(),
+            "size": user_game.size,
+            "image": user_game.image.url if user_game.image else "",
+            "rutracker_id": None,
+            "link": user_game.download_url,
+            "trailer_url": user_game.trailer_url,
+            "screenshot": user_game.screenshot.url if user_game.screenshot else "",
+            "user_game_id": user_game.id,
+        })
+
+    if query and request.user.is_authenticated:
+        # Поиск через RuTracker для авторизованных пользователей.
         try:
             engine = RuTracker()
             engine.search(query)
+            image_choices = os.listdir(IMAGE_FOLDER)
             for torrent_id, torrent_data in engine.results.items():
                 games.append({
                     "title": torrent_data["name"],
@@ -52,8 +63,10 @@ def index(request):
                     "seeds": int(torrent_data["seeds"]),
                     "size_readable": format_size(torrent_data["size"]),
                     "size": int(torrent_data["size"]),
-                    "image": random.choice(os.listdir(IMAGE_FOLDER)),
+                    "image": f"/static/{random.choice(image_choices)}" if image_choices else "",
                     "link": torrent_data["desc_link"],
+                    "trailer_url": "",
+                    "screenshot": "",
                 })
         except Exception as e:
             print(f"Ошибка при поиске на RuTracker: {e}")
@@ -72,16 +85,18 @@ def index(request):
     elif sort_by == "seeds_asc":
         games.sort(key=lambda x: x["seeds"])
 
+    message = ""
+    if query and not request.user.is_authenticated:
+        message = "Результаты RuTracker доступны после входа в аккаунт."
+
     return render(request, "main/index.html", {
         "games": games,
         "query": query,
         "sort_by": sort_by,
+        "message": message,
     })
 
 
-# ------------------------
-# Регистрация пользователя
-# ------------------------
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -96,26 +111,20 @@ def register(request):
     return render(request, 'main/register.html', {'form': form})
 
 
-# ------------------------
-# Отправка запроса на добавление игры
-# ------------------------
 @login_required
 def game_request(request):
     if request.method == 'POST':
         form = GameRequestForm(request.POST, request.FILES)
         if form.is_valid():
-            game_request = form.save(commit=False)
-            game_request.user = request.user
-            game_request.save()
+            game_request_obj = form.save(commit=False)
+            game_request_obj.user = request.user
+            game_request_obj.save()
             return redirect('index')
     else:
         form = GameRequestForm()
     return render(request, 'main/game_request.html', {'form': form})
 
 
-# ------------------------
-# Добавление игры пользователем
-# ------------------------
 @login_required
 def add_user_game(request):
     if request.method == 'POST':
@@ -130,9 +139,14 @@ def add_user_game(request):
     return render(request, 'main/add_user_game.html', {'form': form})
 
 
-# ------------------------
-# Кастомный LoginView
-# ------------------------
+def user_game_detail(request, game_id):
+    game = get_object_or_404(UserGame.objects.select_related("user"), id=game_id)
+    return render(request, "main/user_game_detail.html", {"game": game})
+
+
 class CustomLoginView(LoginView):
     template_name = 'main/login.html'
     authentication_form = AuthenticationForm
+
+    def get_success_url(self):
+        return self.get_redirect_url() or '/'
