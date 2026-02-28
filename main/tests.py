@@ -72,6 +72,57 @@ class UserGameFlowTests(TestCase):
             "https://www.youtube-nocookie.com/embed/nSE38xjMLqE?si=32sbN0fUbEoGNkE_&controls=0",
         )
 
+    def test_index_shows_approved_game_request(self):
+        GameRequest.objects.create(
+            user=self.user,
+            name="Approved Game",
+            description="desc",
+            requirements="req",
+            reviews="rev",
+            trailer_url="https://example.com/trailer",
+            status="approved",
+            image="game_requests/approved.jpg",
+        )
+
+        response = self.client.get(reverse("index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Approved Game")
+        self.assertContains(response, "Одобрено")
+
+    def test_approved_game_request_detail_is_available(self):
+        approved = GameRequest.objects.create(
+            user=self.user,
+            name="Approved Detail",
+            description="desc",
+            requirements="req",
+            reviews="rev",
+            trailer_url="https://example.com/trailer",
+            status="approved",
+            image="game_requests/approved_detail.jpg",
+        )
+
+        response = self.client.get(reverse("approved_game_request_detail", args=[approved.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Approved Detail")
+
+    def test_non_approved_game_request_detail_not_available(self):
+        pending = GameRequest.objects.create(
+            user=self.user,
+            name="Pending Detail",
+            description="desc",
+            requirements="req",
+            reviews="rev",
+            trailer_url="https://example.com/trailer",
+            status="pending",
+            image="game_requests/pending_detail.jpg",
+        )
+
+        response = self.client.get(reverse("approved_game_request_detail", args=[pending.id]))
+
+        self.assertEqual(response.status_code, 404)
+
     def test_index_shows_user_game(self):
         UserGame.objects.create(
             user=self.user,

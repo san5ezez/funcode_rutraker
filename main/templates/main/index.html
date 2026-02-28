@@ -239,6 +239,9 @@
                             {% if game.user_game_id %}
                             <a href="{% url 'user_game_detail' game.user_game_id %}" class="download-btn">ПОДРОБНЕЕ</a>
                             {% endif %}
+                            {% if game.approved_request_id %}
+                            <a href="{% url 'approved_game_request_detail' game.approved_request_id %}" class="download-btn">ПОДРОБНЕЕ</a>
+                            {% endif %}
                             {% if game.rutracker_id %}
                             <a href="https://rutracker.net/forum/viewtopic.php?t={{ game.rutracker_id }}" target="_blank" class="download-btn">УСТАНОВИТЬ</a>
                             {% elif game.link %}

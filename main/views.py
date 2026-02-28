@@ -48,6 +48,25 @@ def index(request):
             "user_game_id": user_game.id,
         })
 
+    approved_requests_qs = GameRequest.objects.select_related("user").filter(status=GameRequest.STATUS_APPROVED)
+    if query:
+        approved_requests_qs = approved_requests_qs.filter(name__icontains=query)
+
+    for approved_request in approved_requests_qs:
+        games.append({
+            "title": approved_request.name,
+            "category": f"Одобрено: {approved_request.user.username}",
+            "seeds": 0,
+            "size_readable": "-",
+            "size": 0,
+            "image": approved_request.image.url if approved_request.image else "",
+            "rutracker_id": None,
+            "link": "",
+            "trailer_url": approved_request.trailer_url,
+            "screenshot": "",
+            "approved_request_id": approved_request.id,
+        })
+
     if query and request.user.is_authenticated:
         try:
             engine = RuTracker()
@@ -150,6 +169,15 @@ def game_requests_status(request):
 def user_game_detail(request, game_id):
     game = get_object_or_404(UserGame.objects.select_related("user"), id=game_id)
     return render(request, "main/user_game_detail.html", {"game": game})
+
+
+def approved_game_request_detail(request, request_id):
+    game_request_obj = get_object_or_404(
+        GameRequest.objects.select_related("user"),
+        id=request_id,
+        status=GameRequest.STATUS_APPROVED,
+    )
+    return render(request, "main/approved_game_request_detail.html", {"game_request": game_request_obj})
 
 
 class CustomLoginView(LoginView):
