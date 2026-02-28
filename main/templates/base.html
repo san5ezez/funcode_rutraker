@@ -13,68 +13,54 @@
             padding: 20px;
         }
 
-        header {
+        .top-panel {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
             margin-bottom: 24px;
         }
 
-        header img {
-            width: 120px;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .nav-links a,
-        .nav-links button {
+        .top-panel a,
+        .top-panel button {
             color: #fff;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 700;
             background-color: #66c0f4;
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 12px 18px;
+            border-radius: 6px;
             border: none;
             cursor: pointer;
+            line-height: 1;
         }
 
-        .nav-links a:hover,
-        .nav-links button:hover {
+        .top-panel a:hover,
+        .top-panel button:hover {
             background-color: #4da8d8;
         }
 
         .content {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
         }
     </style>
 </head>
 <body>
-<header>
-    <div class="nav-links">
-        <a href="{% url 'index' %}">Главная</a>
-        {% if user.is_authenticated %}
-            <a href="{% url 'add_user_game' %}">Добавить игру</a>
-            <a href="{% url 'game_request' %}">Запрос игры</a>
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Выйти</button>
-            </form>
-        {% else %}
-            <a href="{% url 'login' %}">Войти</a>
-            <a href="{% url 'register' %}">Зарегистрироваться</a>
-        {% endif %}
-    </div>
-    <img src="{% static 'main/images/logo.png' %}" alt="Steam Logo">
-</header>
+<div class="top-panel">
+    <a href="{% url 'index' %}">Главная</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'game_request' %}">Запрос игры</a>
+        <a href="{% url 'game_requests_status' %}">Статусы заявок</a>
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Выйти</button>
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}">Войти</a>
+        <a href="{% url 'register' %}">Зарегистрироваться</a>
+    {% endif %}
+</div>
 <div class="content">
     {% block content %}{% endblock %}
 </div>
